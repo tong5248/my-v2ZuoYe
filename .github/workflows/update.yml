@@ -3,8 +3,8 @@ name: 自动更新节点
 on:
   workflow_dispatch:      # 允许手动运行
   schedule:
-    - cron: '0 2 * * *'    
-    # 北京时间 (UTC+8) 上午 10:00 对应 UTC 时间 02:00
+    # 北京时间上午 10:00 (UTC 02:00)
+    - cron: '0 2 * * *'
 
 jobs:
   run-sync:
