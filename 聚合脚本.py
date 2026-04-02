@@ -4,6 +4,7 @@ import re
 import base64
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+import urllib.parse
 
 # --- 核心配置：模拟 V2Ray 客户端特征 ---
 V2RAY_HEADERS = {
@@ -38,24 +39,32 @@ def decode_base64_to_links(raw_text):
         return [l.strip() for l in raw_text.splitlines() if '://' in l]
 
 def deep_deduplicate(nodes):
-    """
-    深度去重核心函数：
-    逻辑：忽略 # 后面的备注名，只对比核心配置部分。
-    如果配置完全一样，则只保留第一个。
-    """
-    seen_configs = set()
+    seen_fingerprints = set()
     unique_nodes = []
     
     for node in nodes:
         node = node.strip()
         if not node: continue
         
-        # 将链接分为：配置部分 和 备注部分
-        # vless://uuid@ip:port?params#备注 -> 拆分为两段
-        config_part = node.split('#')[0] 
-        
-        if config_part not in seen_configs:
-            seen_configs.add(config_part)
+        try:
+            # 1. 解析节点 URL
+            parsed = urllib.parse.urlparse(node)
+            
+            # 2. 提取核心三要素：协议、地址、端口
+            # 比如: vless, 1.2.3.4, 443
+            protocol = parsed.scheme
+            hostname = parsed.hostname
+            port = parsed.port
+            
+            # 组成唯一指纹（不包含 UUID 和备注）
+            fingerprint = f"{protocol}://{hostname}:{port}"
+            
+            # 3. 去重判断
+            if fingerprint not in seen_fingerprints:
+                seen_fingerprints.add(fingerprint)
+                unique_nodes.append(node)
+        except:
+            # 如果解析失败（格式特殊），保留原样，防止误删
             unique_nodes.append(node)
             
     return unique_nodes
