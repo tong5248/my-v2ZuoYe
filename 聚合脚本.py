@@ -14,7 +14,13 @@ V2RAY_HEADERS = {
 
 # --- 过滤配置 ---
 # 仅保留 vless 协议
-PROTOCOL_WHITELIST = ["vless://"]
+PROTOCOL_WHITELIST = [
+    "vless://",      # 你的核心协议
+    "hysteria2://",  # 暴力加速，适合视频
+    "hy2://",        # 部分软件对 Hys2 的简写
+    "trojan://",     # 稳定伪装，适合长期办公
+    "vmess://"       # 兼容性最强
+]
 # 备注中包含以下词汇的节点将被剔除
 KEYWORD_BLACKLIST = ["中国", "香港", "俄罗斯", "未知", "伊朗", "德黑兰", "CN", "HK", "RU", "IR", "回国", "测试"]
 
