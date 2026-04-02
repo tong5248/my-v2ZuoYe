@@ -23,7 +23,7 @@ PROTOCOL_WHITELIST = [
     "vmess://"       # 兼容性最强
 ]
 # 备注中包含以下词汇的节点将被剔除
-KEYWORD_BLACKLIST = ["中国", "香港", "俄罗斯", "未知", "伊朗", "德黑兰", "CN", "HK", "RU", "IR", "回国", "测试"]
+KEYWORD_BLACKLIST = ["中国", "香港", "俄罗斯", "未知", "伊朗", "德黑兰", "CN", "HK", "RU", "IR", "回国", "测试", "->"]
 
 # --- 辅助工具 ---
 def decode_base64_to_links(raw_text):
@@ -39,7 +39,7 @@ def decode_base64_to_links(raw_text):
         return [l.strip() for l in raw_text.splitlines() if '://' in l]
 
 def deep_deduplicate(nodes):
-    seen_fingerprints = set()
+    seen_hosts = set()  # 专门记录 地址+端口
     unique_nodes = []
     
     for node in nodes:
@@ -47,24 +47,24 @@ def deep_deduplicate(nodes):
         if not node: continue
         
         try:
-            # 1. 解析节点 URL
+            # 1. 彻底解析 URL
+            # 例如 vless://uuid@1.2.3.4:443?type=ws...#备注
             parsed = urllib.parse.urlparse(node)
             
-            # 2. 提取核心三要素：协议、地址、端口
-            # 比如: vless, 1.2.3.4, 443
-            protocol = parsed.scheme
-            hostname = parsed.hostname
-            port = parsed.port
+            # 2. 提取核心：主机名(hostname)和端口(port)
+            # 这样不管 UUID 是什么，也不管后面参数怎么变，只要服务器地址一样就去重
+            host_info = f"{parsed.hostname}:{parsed.port}"
             
-            # 组成唯一指纹（不包含 UUID 和备注）
-            fingerprint = f"{protocol}://{hostname}:{port}"
-            
-            # 3. 去重判断
-            if fingerprint not in seen_fingerprints:
-                seen_fingerprints.add(fingerprint)
+            # 3. 检查是否已经存在
+            if host_info not in seen_hosts:
+                seen_hosts.add(host_info)
                 unique_nodes.append(node)
+            else:
+                # 可以在日志里打印一下，看看删掉了谁
+                # print(f"🚫 过滤掉重复服务器: {host_info}")
+                pass
         except:
-            # 如果解析失败（格式特殊），保留原样，防止误删
+            # 解析失败的节点（通常是格式坏了），我们也保留，以防万一
             unique_nodes.append(node)
             
     return unique_nodes
