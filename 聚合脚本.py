@@ -170,8 +170,8 @@ def main():
 
     # 保存原始链接文件
     raw_links_filename = f"{date_str}原始txt.txt"
-    with open(raw_links_filename, "w", encoding="utf-8") as f:
-        f.write("\n".join(unique_txt_links))
+    #with open(raw_links_filename, "w", encoding="utf-8") as f:
+       #f.write("\n".join(unique_txt_links))
     print(f"📝 原始链接已记录至: {raw_links_filename}")
 
     # 2. 抓取阶段
@@ -197,14 +197,14 @@ def main():
     final_sub_filename = f"{date_str}最终内容.txt"
     if filtered_nodes:
         # 导出明文版
-        with open(f"{date_str}明内容.txt", "w", encoding="utf-8") as f:
-            f.write("\n".join(filtered_nodes))
+        #with open(f"{date_str}明内容.txt", "w", encoding="utf-8") as f:
+            #f.write("\n".join(filtered_nodes))
         
         # 导出 Base64 订阅版
         combined_data = "\n".join(filtered_nodes)
         b64_output = base64.b64encode(combined_data.encode('utf-8')).decode('utf-8')
-        with open(final_sub_filename, "w", encoding="utf-8") as f:
-            f.write(b64_output)
+        #with open(final_sub_filename, "w", encoding="utf-8") as f:
+            #f.write(b64_output)
         
         # 同时更新 latest.txt 方便固定链接使用
         with open("zuoye.txt", "w", encoding="utf-8") as f:
